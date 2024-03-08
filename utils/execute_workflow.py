@@ -3,9 +3,9 @@ import uuid
 import os
 from PIL import Image
 import io
+from flask import request
 
 from utils.get_comfyui_images import get_comfyui_images
-
 
 def execute_workflow(workflow, seed):
     server_address = os.getenv("COMFYUI_SERVER_ADDRESS")
@@ -19,12 +19,13 @@ def execute_workflow(workflow, seed):
     images = get_comfyui_images(ws, workflow, client_id)
 
     # Save the images to the output folder
+    app_url = request.url_root
     final_images = []
     for node_id in images:
         for image_data in images[node_id]:
             image = Image.open(io.BytesIO(image_data))
             image.save(f"./output/{node_id}-{seed}.png")
-            final_images.append(f"{node_id}-{seed}.png")
+            final_images.append(f"{app_url}output/{node_id}-{seed}.png")
     
     ws.close()
 

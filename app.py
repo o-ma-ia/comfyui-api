@@ -1,10 +1,15 @@
-from flask import Flask, abort, request
+from flask import Flask, abort, request, send_from_directory
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
-    return "<p>Hello, World!</p>"
+    app_url = request.url_root
+    return f"<h1>It's alive!</h1><p>Hello, World from {app_url}!</p>"
+
+@app.route('/output/<path:path>')
+def serve_output(path):
+    return send_from_directory('output', path)
 
 @app.post("/comfyui/<workflow>")
 def comfyui(workflow):
@@ -12,7 +17,6 @@ def comfyui(workflow):
     import random
     import importlib.util
 
-    from utils.upload_file import upload_file
     from utils.replace_placeholders import replace_placeholders
     from utils.execute_workflow import execute_workflow
     from utils.download_file import download_file
@@ -50,7 +54,6 @@ def comfyui(workflow):
 
     # Execute the workflow
     result = execute_workflow(workflow_json, seed)
-    result = True
     return {
         "variables": variables_dict,
         "workflow": workflow_json,
