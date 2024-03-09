@@ -11,6 +11,10 @@ def execute_workflow(workflow, seed):
     server_address = os.getenv("COMFYUI_SERVER_ADDRESS")
     client_id = str(uuid.uuid4())
 
+    # create output folder if it does not exist
+    if not os.path.exists("./output/"):
+        os.makedirs("./output/")  
+
     # Connect to the ComfyUI websocket
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
