@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from flask import abort
 import requests
@@ -20,6 +21,14 @@ def download_file(url: str, dest_folder: str):
     real_filename = os.path.splitext(os.path.basename(path))[0]
     # Extract the file extension from the path
     extension = os.path.splitext(path)[1]
+    # If the extension is empty, try to get it from the Content-Type header
+    if extension == "":
+        # Make a HEAD request to get the metadata
+        response = requests.head(url)
+        # Get the Content-Type header
+        content_type = response.headers['Content-Type']
+        # Use the mimetypes library to get the extension
+        extension = mimetypes.guess_extension(content_type)
 
     # Combine the real filename, date, and extension
     filename = f"{real_filename}_{date_str}{extension}"
