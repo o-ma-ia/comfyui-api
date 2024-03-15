@@ -1,35 +1,27 @@
-from flask import Flask, abort, request, send_from_directory
+import os
+from flask import Blueprint, abort, request
 
-app = Flask(__name__)
+bp = Blueprint('workflow', __name__, url_prefix='/comfyui')
 
-@app.route("/")
-def hello_world():
-    app_url = request.url_root
-    return f"<h1>It's alive!</h1><p>Hello, World from {app_url}!</p>"
-
-@app.route('/output/<path:path>')
-def serve_output(path):
-    return send_from_directory('output', path)
-
-@app.post("/comfyui/<workflow>")
+@bp.post("/<workflow>")
 def comfyui(workflow):
     import json
     import random
     import importlib.util
 
-    from utils.replace_placeholders import replace_placeholders
-    from utils.execute_workflow import execute_workflow
-    from utils.download_file import download_file
+    from comfyui_api.utils.replace_placeholders import replace_placeholders
+    from comfyui_api.utils.execute_workflow import execute_workflow
 
     # Get the post data
     post_data = request.json
 
     # Set the seed for the workflow
     seed = random.randint(1, 1000000000)
+    base_dir = os.path.dirname(os.path.realpath(__file__))
 
     # Dynamically import the workflow data module based on the workflow variable
     try:
-        spec = importlib.util.spec_from_file_location("workflow_data", f"./comfyui-workflows/{workflow}_data.py")
+        spec = importlib.util.spec_from_file_location("workflow_data", f"{base_dir}/comfyui-workflows/{workflow}_data.py")
         workflow_data_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(workflow_data_module)
     except FileNotFoundError:
@@ -40,7 +32,7 @@ def comfyui(workflow):
 
     # Load workflow from file
     try:
-        workflow_file = open(f"./comfyui-workflows/{workflow}.json", "r", encoding="utf-8")
+        workflow_file = open(f"{base_dir}/comfyui-workflows/{workflow}.json", "r", encoding="utf-8")
     except OSError as e:
         print('open() failed', e)
         abort(500, description="Workflow file not found")

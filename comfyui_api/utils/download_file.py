@@ -2,7 +2,6 @@ import os
 from flask import abort
 import requests
 import datetime
-import mimetypes
 from urllib.parse import urlparse
 
 

@@ -1,6 +1,7 @@
+import os
 from flask import abort
-from utils.download_file import download_file
-from utils.upload_file import upload_file
+from comfyui_api.utils.download_file import download_file
+from comfyui_api.utils.upload_file import upload_file
 
 def get_data(data, seed):
 
@@ -15,7 +16,8 @@ def get_data(data, seed):
         abort(500, description="The parameter 'image' is required for this workflow")
 
     # Download the image
-    file = download_file(data["image"], "./temp")
+    base_dir = os.path.dirname(os.path.realpath(__file__))
+    file = download_file(data["image"], f"{base_dir}/../temp")
     # upload and set the image name for our LoadImage node
     with open(file, "rb") as f:
         comfyui_path_image = upload_file(f,"",True)
